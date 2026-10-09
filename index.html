@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Закон Гесса та Розрахунки НМТ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+        }
+
+        .card-shadow {
+            box-shadow: 0 4px 15px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -2px rgba(0, 0, 0, 0.03);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-indigo-100 selection:text-indigo-900">
+
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-gradient-to-tr from-indigo-600 to-blue-500 text-white rounded-xl shadow-md">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-black text-slate-800 tracking-tight leading-tight">Закон Гесса та Розрахунки НМТ</h1>
+                    <p class="text-xs font-semibold text-slate-500">Практичний покроковий тренажер з хімії</p>
+                </div>
+            </div>
+
+            <!-- Global Score Board & Sound Control -->
+            <div class="flex items-center gap-2.5">
+                <div class="bg-slate-100 px-3 py-1.5 rounded-xl flex items-center gap-2 border border-slate-200">
+                    <span class="text-xs font-bold text-slate-600">Бали:</span>
+                    <span id="score-display" class="text-lg font-black text-indigo-600">0</span>
+                    <span class="text-xs text-slate-400">/ 100</span>
+                </div>
+
+                <button id="sound-toggle" onclick="toggleSound()" class="p-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 transition" title="Увімкнути/Вимкнути звук">
+                    <svg id="sound-icon-on" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                    </svg>
+                    <svg id="sound-icon-off" class="w-5 h-5 hidden text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/>
+                    </svg>
+                </button>
+
+                <button onclick="restartGame()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    <span class="hidden sm:inline">Спочатку</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-slate-100 border-t border-slate-200">
+            <div class="max-w-5xl mx-auto px-4 flex justify-between">
+                <button id="nav-btn-1" onclick="switchLevel(1)" class="py-2.5 px-3 font-extrabold text-xs sm:text-sm border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5 transition">
+                    <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">1</span>
+                    Вправа 1: Конструктор Гесса
+                </button>
+                <button id="nav-btn-2" onclick="switchLevel(2)" class="py-2.5 px-3 font-extrabold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition">
+                    <span class="w-5 h-5 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center">2</span>
+                    Вправа 2: Задачі НМТ
+                </button>
+                <button id="nav-btn-3" onclick="switchLevel(3)" class="py-2.5 px-3 font-extrabold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition">
+                    <span class="w-5 h-5 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center">3</span>
+                    Підсумок & Шпаргалка
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-3 sm:px-4 py-4 flex-grow w-full">
+
+        <section id="level-1-section" class="block space-y-4">
+            <!-- Header banner with Step Progress Buttons -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow flex flex-wrap items-center justify-between gap-3">
+                <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 bg-indigo-100 text-indigo-900 font-extrabold text-[11px] rounded-md uppercase tracking-wide">Блок 1 з 2</span>
+                        <h2 class="text-base sm:text-lg font-black text-slate-800">Конструктор Закону Гесса</h2>
+                    </div>
+                    <p class="text-xs text-slate-600">Обери правильно підготовлену математичну суму для обчислення Δ<i>H</i><sub>x</sub></p>
+                </div>
+
+                <!-- Interactive Step Selector Buttons -->
+                <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                    <span class="text-xs font-bold text-slate-500 mr-1 hidden sm:inline">Завдання:</span>
+                    <div id="hess-step-buttons" class="flex items-center gap-1">
+                        <!-- Step pills injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Active Hess Task Card -->
+            <div id="hess-task-single-container">
+                <!-- Injected dynamically via JS -->
+            </div>
+
+            <!-- Bottom Prev/Next Controls -->
+            <div class="flex items-center justify-between pt-1">
+                <button id="hess-prev-btn" onclick="navHessTask(-1)" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition flex items-center gap-1">
+                    ← Попередня задача
+                </button>
+                <span id="hess-task-counter" class="text-xs font-extrabold text-slate-500">1 з 5</span>
+                <button id="hess-next-btn" onclick="navHessTask(1)" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-1">
+                    Наступна задача →
+                </button>
+            </div>
+        </section>
+
+        <section id="level-2-section" class="hidden space-y-4">
+            <!-- Header banner with Step Progress Buttons -->
+            <div class="bg-white p-4 rounded-2xl border border-slate-200 card-shadow flex flex-wrap items-center justify-between gap-3">
+                <div class="space-y-0.5">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-0.5 bg-blue-100 text-blue-900 font-extrabold text-[11px] rounded-md uppercase tracking-wide">Блок 2 з 2</span>
+                        <h2 class="text-base sm:text-lg font-black text-slate-800">Практикум Розрахункових Задач НМТ</h2>
+                    </div>
+                    <p class="text-xs text-slate-600">Розв'яжи типові задачі на пропорції за термохімічними рівняннями</p>
+                </div>
+
+                <!-- Interactive Step Selector Buttons -->
+                <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200">
+                    <span class="text-xs font-bold text-slate-500 mr-1 hidden sm:inline">Завдання:</span>
+                    <div id="calc-step-buttons" class="flex items-center gap-1">
+                        <!-- Step pills injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single Active Calc Task Card -->
+            <div id="calc-task-single-container">
+                <!-- Injected dynamically via JS -->
+            </div>
+
+            <!-- Bottom Prev/Next Controls -->
+            <div class="flex items-center justify-between pt-1">
+                <button id="calc-prev-btn" onclick="navCalcTask(-1)" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition flex items-center gap-1">
+                    ← Попередня задача
+                </button>
+                <span id="calc-task-counter" class="text-xs font-extrabold text-slate-500">1 з 5</span>
+                <button id="calc-next-btn" onclick="navCalcTask(1)" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-1">
+                    Наступна задача →
+                </button>
+            </div>
+        </section>
+
+        <section id="level-3-section" class="hidden space-y-5">
+            <!-- Final Score Banner -->
+            <div class="bg-gradient-to-r from-indigo-600 via-blue-600 to-indigo-700 text-white p-6 sm:p-8 rounded-3xl shadow-lg text-center relative overflow-hidden">
+                <div class="relative z-10 space-y-2">
+                    <h2 class="text-2xl sm:text-3xl font-black">Підсумок практичного блоку!</h2>
+                    <div class="text-4xl sm:text-5xl font-black tracking-tight my-1">
+                        <span id="final-score-val">0</span> <span class="text-2xl text-indigo-200">/ 100</span>
+                    </div>
+                    <p id="final-feedback-msg" class="text-sm sm:text-base font-semibold text-indigo-100 max-w-2xl mx-auto">
+                        Чудова робота із розрахунковими задачами та Законом Гесса!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Calculation Cheat Sheet -->
+            <div class="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 card-shadow space-y-5">
+                <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+                    <div class="p-2 bg-slate-800 text-white rounded-xl">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-slate-800">Шпаргалка з Закону Гесса та Пропорцій НМТ</h3>
+                        <p class="text-xs text-slate-500">Алгоритми для швидких розрахунків на іспиті</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- HESS LAW RULES -->
+                    <div class="bg-indigo-50 border-2 border-indigo-200 p-4 rounded-2xl space-y-2.5">
+                        <h4 class="font-black text-indigo-950 text-sm sm:text-base flex items-center gap-2">
+                            <span>🧩</span> Алгоритм Закону Гесса
+                        </h4>
+                        <ul class="space-y-2 text-xs sm:text-sm text-indigo-950 font-semibold leading-relaxed">
+                            <li class="flex items-start gap-1.5">
+                                <span class="text-indigo-600 font-bold">•</span>
+                                <span><b>1. Речовина-орієнтир:</b> Знаходимо у вихідних рівняннях речовину з шуканої реакції.</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                                <span class="text-indigo-600 font-bold">•</span>
+                                <span><b>2. Перевертання:</b> Змінює знак Δ<i>H</i> на протилежний (+ на -, або - на +).</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                                <span class="text-indigo-600 font-bold">•</span>
+                                <span><b>3. Множення коефіцієнтів:</b> Якщо множиш рівняння на <i>N</i>, обов'язково помнож Δ<i>H</i> на <i>N</i>!</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                                <span class="text-indigo-600 font-bold">•</span>
+                                <span><b>4. Додавання:</b> Підсумковий Δ<i>H</i> = алгебраїчній сумі підготовлених Δ<i>H</i>.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- PROPORTION FORMULAS -->
+                    <div class="bg-emerald-50 border-2 border-emerald-200 p-4 rounded-2xl space-y-2.5">
+                        <h4 class="font-black text-emerald-950 text-sm sm:text-base flex items-center gap-2">
+                            <span>📐</span> Формули Пропорцій НМТ
+                        </h4>
+                        <ul class="space-y-2 text-xs sm:text-sm text-emerald-950 font-semibold leading-relaxed">
+                            <li class="flex items-start gap-1.5">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span><b>Крок 1:</b> Знаходимо кількість речовини: <i>n</i> = <i>V</i> / 22,4 (для газів) або <i>n</i> = <i>m</i> / <i>M</i>.</span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span><b>Крок 2:</b> Складаємо пропорцію за коефіцієнтами:<br>
+                                <code class="bg-emerald-100 px-2 py-0.5 rounded text-emerald-900 font-bold">За рівнянням (коеф. моль) → Q (кДж)</code><br>
+                                <code class="bg-emerald-100 px-2 py-0.5 rounded text-emerald-900 font-bold">За умовою (n моль) → X кДж</code></span>
+                            </li>
+                            <li class="flex items-start gap-1.5">
+                                <span class="text-emerald-600 font-bold">•</span>
+                                <span><b>Пам'ятай:</b> Δ<i>H</i> та <i>Q</i> мають протилежні знаки (<i>Q</i> = -Δ<i>H</i>).</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-4 pt-2">
+                <button onclick="restartGame()" class="px-8 py-3.5 bg-slate-800 hover:bg-slate-900 text-white font-extrabold text-base rounded-2xl shadow-lg transition">
+                    Пройти тренажер ще раз 🔄
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-slate-500 text-xs font-semibold">
+        <div class="max-w-5xl mx-auto px-4">
+            <p>Інтерактивний тренажер підготовки до НМТ з хімії • Закон Гесса та Розрахунки</p>
+        </div>
+    </footer>
+
+    <script>
+        // Audio Synthesizer setup
+        let soundEnabled = true;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.frequency.setValueAtTime(450, now);
+                    gain.gain.setValueAtTime(0.04, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } else if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'wrong') {
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(180, now + 0.1);
+                    gain.gain.setValueAtTime(0.08, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    osc.start(now);
+                    osc.stop(now + 0.22);
+                } else if (type === 'fanfare') {
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.1);
+                    osc.frequency.setValueAtTime(659.25, now + 0.2);
+                    osc.frequency.setValueAtTime(880, now + 0.3);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+                    osc.start(now);
+                    osc.stop(now + 0.45);
+                }
+            } catch(e) {
+                console.log("Audio play suppressed");
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('sound-icon-on').classList.toggle('hidden', !soundEnabled);
+            document.getElementById('sound-icon-off').classList.toggle('hidden', soundEnabled);
+        }
+
+        // --- DATASET: LEVEL 1 (HESS LAW TASKS) ---
+        const hessTasksData = [
+            {
+                id: 'h1',
+                title: 'Завдання 1. Синтез метану CH₄',
+                targetEq: 'C<sub>(тверд)</sub> + 2H<sub>2(г)</sub> → CH<sub>4(г)</sub> &nbsp; (Δ<i>H</i><sub>x</sub> = ?)',
+                givenEqs: [
+                    '1) C<sub>(т)</sub> + O<sub>2(г)</sub> → CO<sub>2(г)</sub> &nbsp;&nbsp; Δ<i>H</i><sub>1</sub> = -393,5 кДж',
+                    '2) H<sub>2(г)</sub> + 0,5O<sub>2(г)</sub> → H<sub>2</sub>O<sub>(р)</sub> &nbsp;&nbsp; Δ<i>H</i><sub>2</sub> = -285,8 кДж',
+                    '3) CH<sub>4(г)</sub> + 2O<sub>2(г)</sub> → CO<sub>2(г)</sub> + 2H<sub>2</sub>O<sub>(р)</sub> &nbsp;&nbsp; Δ<i>H</i><sub>3</sub> = -890,3 кДж'
+                ],
+                options: [
+                    { text: 'ΔH_x = -393,5 + 2·(-285,8) - (-890,3) = -74,8 кДж', correct: true },
+                    { text: 'ΔH_x = -393,5 + (-285,8) + (-890,3) = -1569,6 кДж', correct: false },
+                    { text: 'ΔH_x = -393,5 - 2·(-285,8) + (-890,3) = -1822,1 кДж', correct: false }
+                ],
+                explanation: 'Рівняння (1) залишаємо без змін (-393,5). Рівняння (2) множимо на 2 (-571,6). Рівняння (3) перевертаємо, оскільки CH₄ має бути в продуктах (+890,3). Додаємо: -393,5 - 571,6 + 890,3 = -74,8 кДж.'
+            },
+            {
+                id: 'h2',
+                title: 'Завдання 2. Утворення чадного газу CO',
+                targetEq: 'C<sub>(тверд)</sub> + 0,5O<sub>2(г)</sub> → CO<sub>(г)</sub> &nbsp; (Δ<i>H</i><sub>x</sub> = ?)',
+                givenEqs: [
+                    '1) C<sub>(т)</sub> + O<sub>2(г)</sub> → CO<sub>2(г)</sub> &nbsp;&nbsp; Δ<i>H</i><sub>1</sub> = -393,5 кДж',
+                    '2) CO<sub>(г)</sub> + 0,5O<sub>2(г)</sub> → CO<sub>2(г)</sub> &nbsp;&nbsp; Δ<i>H</i><sub>2</sub> = -283,0 кДж'
+                ],
+                options: [
+                    { text: 'ΔH_x = -393,5 + (-283,0) = -676,5 кДж', correct: false },
+                    { text: 'ΔH_x = -393,5 - (-283,0) = -110,5 кДж', correct: true },
+                    { text: 'ΔH_x = -283,0 - (-393,5) = +110,5 кДж', correct: false }
+                ],
+                explanation: 'Рівняння (1) залишаємо без змін (-393,5). Рівняння (2) перевертаємо, щоб CO опинився в продуктах, тому змінюємо знак на протилежний (+283,0). Сума: -393,5 + 283,0 = -110,5 кДж.'
+            },
+            {
+                id: 'h3',
+                title: 'Завдання 3. Теоретичний детектив закону Гесса',
+                targetEq: 'Від чого залежить тепловий ефект хімічної реакції за Законом Гесса?',
+                givenEqs: [
+                    'Закон Гесса (1840 р.) є основою термохімічних розрахунків.'
+                ],
+                options: [
+                    { text: 'Тільки від початкового та кінцевого стану речовин, але не від шляху реакції', correct: true },
+                    { text: 'Від кількості проміжних стадій та швидкості проведения реакції', correct: false },
+                    { text: 'Від форми пробірки та наявності каталізатора', correct: false }
+                ],
+                explanation: 'Правильно! За законом Гесса тепловий ефект залежить ТІЛЬКИ від початкового і кінцевого стану системи.'
+            },
+            {
+                id: 'h4',
+                title: 'Завдання 4. Окиснення сірки до сульфур(VI) оксиду',
+                targetEq: '2S<sub>(т)</sub> + 3O<sub>2(г)</sub> → 2SO<sub>3(г)</sub> &nbsp; (Δ<i>H</i><sub>x</sub> = ?)',
+                givenEqs: [
+                    '1) S<sub>(т)</sub> + O<sub>2(г)</sub> → SO<sub>2(г)</sub> &nbsp;&nbsp; Δ<i>H</i><sub>1</sub> = -297 кДж',
+                    '2) 2SO<sub>2(г)</sub> + O<sub>2(г)</sub> → 2SO<sub>3(г)</sub> &nbsp;&nbsp; Δ<i>H</i><sub>2</sub> = -198 кДж'
+                ],
+                options: [
+                    { text: 'ΔH_x = 2·(-297) + (-198) = -792 кДж', correct: true },
+                    { text: 'ΔH_x = -297 + (-198) = -495 кДж', correct: false },
+                    { text: 'ΔH_x = 2·(-297) - (-198) = -396 кДж', correct: false }
+                ],
+                explanation: 'Рівняння (1) множимо на 2 (оскільки треба 2S): 2·(-297) = -594 кДж. Рівняння (2) залишаємо без змін (-198 кДж). Сума: -594 + (-198) = -792 кДж.'
+            },
+            {
+                id: 'h5',
+                title: 'Завдання 5. Правило перевертання термохімічного рівняння',
+                targetEq: 'Якщо ми перевертаємо термохімічне рівняння у зворотному напрямку, що відбувається з ΔH?',
+                givenEqs: [
+                    'Наприклад: N<sub>2</sub> + O<sub>2</sub> → 2NO (ΔH = +180 кДж). Якщо записати: 2NO → N<sub>2</sub> + O<sub>2</sub>?'
+                ],
+                options: [
+                    { text: 'Чисельне значення залишається таким самим, а знак ΔH змінюється на протилежний', correct: true },
+                    { text: 'Знак ΔH не змінюється, але значення ділиться на 2', correct: false },
+                    { text: 'ΔH завжди стає рівним 0', correct: false }
+                ],
+                explanation: 'При зміні напрямку реакції виділення енергії змінюється на поглинання тієї ж кількості теплоти (знак ΔH змінюється з + на - або навпаки).'
+            }
+        ];
+
+        // --- DATASET: LEVEL 2 (CALCULATION PROBLEMS) ---
+        const calcTasksData = [
+            {
+                id: 'c1',
+                title: 'Задача 1. Спалювання чадного газу CO (на об\'єм)',
+                problemText: 'Обчисліть кількість теплоти (кДж), яка виділиться під час спалювання чадного газу CO об\'ємом 67,2 л (н. у.) за рівнянням:<br><b class="text-indigo-900">2CO<sub>(г)</sub> + O<sub>2(г)</sub> → 2CO<sub>2(г)</sub> + 566 кДж</b>',
+                options: [
+                    { text: '566 кДж', correct: false },
+                    { text: '849 кДж', correct: true },
+                    { text: '1698 кДж', correct: false },
+                    { text: '283 кДж', correct: false }
+                ],
+                explanation: 'n(CO) = 67,2 / 22,4 = 3 моль. За рівнянням: 2 моль CO → 566 кДж. Складаємо пропорцію: 3 моль CO → X кДж. X = (3 · 566) / 2 = 849 кДж.'
+            },
+            {
+                id: 'c2',
+                title: 'Задача 2. Хімічна грілка (на масу заліза)',
+                problemText: 'Для виготовлення хімічної грілки використовують реакцію:<br><b class="text-indigo-900">4Fe<sub>(т)</sub> + 3O<sub>2(г)</sub> → 2Fe<sub>2</sub>O<sub>3(т)</sub> + 1644 кДж</b><br>Яка маса заліза (г) має повністю окиснитися, щоб виділилося 411 кДж теплоти? (M(Fe) = 56 г/моль)',
+                options: [
+                    { text: '112 г', correct: false },
+                    { text: '56 г', correct: true },
+                    { text: '224 г', correct: false },
+                    { text: '28 г', correct: false }
+                ],
+                explanation: 'За рівнянням 4 моль Fe виділяють 1644 кДж. Для 411 кДж потрібно: n(Fe) = (4 · 411) / 1644 = 1 моль Fe. Маса m = 1 моль · 56 г/моль = 56 г.'
+            },
+            {
+                id: 'c3',
+                title: 'Задача 3. Термічний розклад Cu(OH)₂',
+                problemText: 'Під час термолізу купрум(II) гідроксиду за рівнянням:<br><b class="text-indigo-900">Cu(OH)<sub>2(т)</sub> → CuO<sub>(т)</sub> + H<sub>2</sub>O<sub>(г)</sub> &nbsp; (ΔH = +81 кДж)</b><br>поглинулося 20,25 кДж теплоти. Який об\'єм водяної пари (л, н. у.) утворився?',
+                options: [
+                    { text: '5,6 л', correct: true },
+                    { text: '22,4 л', correct: false },
+                    { text: '11,2 л', correct: false },
+                    { text: '2,8 л', correct: false }
+                ],
+                explanation: 'Частка реакції = 20,25 / 81 = 0,25 моль. Об\'єм пари V = 0,25 моль · 22,4 л/моль = 5,6 л.'
+            },
+            {
+                id: 'c4',
+                title: 'Задача 4. Енергетика фотосинтезу',
+                problemText: 'Процес фотосинтезу описується рівнянням:<br><b class="text-indigo-900">6CO<sub>2(г)</sub> + 6H<sub>2</sub>O<sub>(р)</sub> → C<sub>6</sub>H<sub>12</sub>O<sub>6(т)</sub> + 6O<sub>2(г)</sub> &nbsp; (ΔH = +2800 кДж)</b><br>Який об\'єм кисню (л, н. у.) виділиться рослиною при поглинанні 1400 кДж енергії?',
+                options: [
+                    { text: '134,4 л', correct: false },
+                    { text: '67,2 л', correct: true },
+                    { text: '22,4 л', correct: false },
+                    { text: '44,8 л', correct: false }
+                ],
+                explanation: '1400 кДж — це рівно половина від 2800 кДж. Отже, виділиться удвічі менше кисню: n(O₂) = 6 / 2 = 3 моль. Об\'єм V = 3 · 22,4 = 67,2 л.'
+            },
+            {
+                id: 'c5',
+                title: 'Задача 5. Розрахунок ΔH за стандартними ентальпіями утворення',
+                problemText: 'Обчисліть ΔH реакції горіння метану CH<sub>4</sub> + 2O<sub>2</sub> → CO<sub>2</sub> + 2H<sub>2</sub>O<sub>(р)</sub>, якщо:<br>ΔH<sub>f</sub>(CH<sub>4</sub>) = -75 кДж/моль, ΔH<sub>f</sub>(CO<sub>2</sub>) = -394 кДж/моль, ΔH<sub>f</sub>(H<sub>2</sub>O<sub>(р)</sub>) = -286 кДж/моль.',
+                options: [
+                    { text: '-891 кДж', correct: true },
+                    { text: '-605 кДж', correct: false },
+                    { text: '-966 кДж', correct: false },
+                    { text: '+891 кДж', correct: false }
+                ],
+                explanation: 'ΔH = ΣΔH_f(продукти) - ΣΔH_f(реагенти) = [-394 + 2·(-286)] - [-75 + 2·0] = [-394 - 572] + 75 = -966 + 75 = -891 кДж.'
+            }
+        ];
+
+        let userHessAnswers = {}; // taskId -> optionIndex
+        let userCalcAnswers = {}; // taskId -> optionIndex
+        let currentHessIdx = 0;
+        let currentCalcIdx = 0;
+        let totalScore = 0;
+
+        function initApp() {
+            renderHessTask();
+            renderCalcTask();
+            updateScoreUI();
+        }
+
+        function switchLevel(lvl) {
+            playSound('click');
+            document.getElementById('level-1-section').classList.toggle('hidden', lvl !== 1);
+            document.getElementById('level-2-section').classList.toggle('hidden', lvl !== 2);
+            document.getElementById('level-3-section').classList.toggle('hidden', lvl !== 3);
+
+            for (let i = 1; i <= 3; i++) {
+                const btn = document.getElementById(`nav-btn-${i}`);
+                if (i === lvl) {
+                    btn.className = "py-2.5 px-3 font-extrabold text-xs sm:text-sm border-b-2 border-indigo-600 text-indigo-700 flex items-center gap-1.5 transition";
+                } else {
+                    btn.className = "py-2.5 px-3 font-extrabold text-xs sm:text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-1.5 transition";
+                }
+            }
+
+            if (lvl === 3) {
+                calculateFinalResults();
+            }
+        }
+
+        // --- LEVEL 1 SINGLE-TASK NAVIGATION & RENDER ---
+        function renderHessTask() {
+            // Render step progress pills
+            const stepBtnsContainer = document.getElementById('hess-step-buttons');
+            stepBtnsContainer.innerHTML = '';
+
+            hessTasksData.forEach((task, idx) => {
+                const userChoice = userHessAnswers[task.id];
+                const isAnswered = userChoice !== undefined;
+                const isCorrect = isAnswered && task.options[userChoice].correct;
+                const isCurrent = idx === currentHessIdx;
+
+                let pillStyle = "bg-slate-200 text-slate-700 border-slate-300";
+                if (isAnswered) {
+                    pillStyle = isCorrect ? "bg-emerald-600 text-white border-emerald-600" : "bg-rose-600 text-white border-rose-600";
+                }
+
+                let ringClass = isCurrent ? "ring-2 ring-indigo-600 ring-offset-2 font-black scale-110 z-10" : "font-bold opacity-80 hover:opacity-100";
+
+                stepBtnsContainer.innerHTML += `
+                    <button onclick="jumpHessTask(${idx})" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs border transition-all flex items-center justify-center ${pillStyle} ${ringClass}">
+                        ${idx + 1}
+                    </button>
+                `;
+            });
+
+            // Render current task card
+            const container = document.getElementById('hess-task-single-container');
+            const task = hessTasksData[currentHessIdx];
+            const userChoice = userHessAnswers[task.id];
+            const isAnswered = userChoice !== undefined;
+
+            let givenEqsHtml = task.givenEqs.map(eq => `<div class="bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-700">${eq}</div>`).join('');
+
+            let optionsHtml = task.options.map((opt, optIdx) => {
+                const isSelected = userChoice === optIdx;
+                let btnStyle = "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200";
+
+                if (isAnswered) {
+                    if (opt.correct) {
+                        btnStyle = "bg-emerald-600 text-white font-bold border-emerald-600 shadow-sm";
+                    } else if (isSelected && !opt.correct) {
+                        btnStyle = "bg-rose-600 text-white font-bold border-rose-600 shadow-sm";
+                    } else {
+                        btnStyle = "bg-slate-100 opacity-50 text-slate-500 border-slate-200";
+                    }
+                }
+
+                return `
+                    <button onclick="selectHessAnswer('${task.id}', ${optIdx})" ${isAnswered ? 'disabled' : ''}
+                        class="w-full p-3 sm:p-3.5 rounded-xl border text-left text-xs sm:text-sm font-semibold transition flex items-center justify-between gap-2 ${btnStyle}">
+                        <span>${opt.text}</span>
+                        ${isAnswered && opt.correct ? '<span class="text-base">✓</span>' : ''}
+                        ${isSelected && !opt.correct ? '<span class="text-base">✗</span>' : ''}
+                    </button>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow space-y-3.5">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                        <h3 class="font-black text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-indigo-100 text-indigo-800 font-bold text-xs flex items-center justify-center">${currentHessIdx + 1}</span>
+                            <span>${task.title}</span>
+                        </h3>
+                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-indigo-50 text-indigo-700">Закон Гесса</span>
+                    </div>
+
+                    <div class="space-y-1">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Шукане рівняння:</p>
+                        <div class="bg-indigo-50 border border-indigo-200 p-2.5 rounded-xl font-bold text-indigo-950 text-xs sm:text-sm">
+                            ${task.targetEq}
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Вихідні дані:</p>
+                        <div class="space-y-1">
+                            ${givenEqsHtml}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-1">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Обери правильне вираження ΔH_x:</p>
+                        <div class="space-y-2">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+
+                    ${isAnswered ? `
+                        <div class="p-3.5 rounded-xl border text-xs sm:text-sm ${task.options[userChoice].correct ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'} transition-all space-y-1">
+                            <div class="font-extrabold flex items-center gap-1">
+                                <span>${task.options[userChoice].correct ? '🎉 Правильно!' : '⚠️ Пояснення:'}</span>
+                            </div>
+                            <p class="font-medium leading-relaxed">${task.explanation}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Update bottom controls
+            document.getElementById('hess-task-counter').innerText = `${currentHessIdx + 1} з ${hessTasksData.length}`;
+            document.getElementById('hess-prev-btn').disabled = currentHessIdx === 0;
+            document.getElementById('hess-prev-btn').classList.toggle('opacity-40', currentHessIdx === 0);
+
+            const nextBtn = document.getElementById('hess-next-btn');
+            if (currentHessIdx === hessTasksData.length - 1) {
+                nextBtn.innerText = "Перейти до Вправи 2 →";
+                nextBtn.onclick = function() { switchLevel(2); };
+            } else {
+                nextBtn.innerText = "Наступна задача →";
+                nextBtn.onclick = function() { navHessTask(1); };
+            }
+
+            recalculateScore();
+        }
+
+        function jumpHessTask(idx) {
+            playSound('click');
+            currentHessIdx = idx;
+            renderHessTask();
+        }
+
+        function navHessTask(delta) {
+            playSound('click');
+            currentHessIdx = Math.max(0, Math.min(hessTasksData.length - 1, currentHessIdx + delta));
+            renderHessTask();
+        }
+
+        function selectHessAnswer(taskId, optIdx) {
+            userHessAnswers[taskId] = optIdx;
+            const task = hessTasksData.find(t => t.id === taskId);
+            if (task.options[optIdx].correct) {
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+            renderHessTask();
+        }
+
+        // --- LEVEL 2 SINGLE-TASK NAVIGATION & RENDER ---
+        function renderCalcTask() {
+            // Render step progress pills
+            const stepBtnsContainer = document.getElementById('calc-step-buttons');
+            stepBtnsContainer.innerHTML = '';
+
+            calcTasksData.forEach((task, idx) => {
+                const userChoice = userCalcAnswers[task.id];
+                const isAnswered = userChoice !== undefined;
+                const isCorrect = isAnswered && task.options[userChoice].correct;
+                const isCurrent = idx === currentCalcIdx;
+
+                let pillStyle = "bg-slate-200 text-slate-700 border-slate-300";
+                if (isAnswered) {
+                    pillStyle = isCorrect ? "bg-emerald-600 text-white border-emerald-600" : "bg-rose-600 text-white border-rose-600";
+                }
+
+                let ringClass = isCurrent ? "ring-2 ring-blue-600 ring-offset-2 font-black scale-110 z-10" : "font-bold opacity-80 hover:opacity-100";
+
+                stepBtnsContainer.innerHTML += `
+                    <button onclick="jumpCalcTask(${idx})" class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg text-xs border transition-all flex items-center justify-center ${pillStyle} ${ringClass}">
+                        ${idx + 1}
+                    </button>
+                `;
+            });
+
+            // Render current calc card
+            const container = document.getElementById('calc-task-single-container');
+            const task = calcTasksData[currentCalcIdx];
+            const userChoice = userCalcAnswers[task.id];
+            const isAnswered = userChoice !== undefined;
+
+            let optionsHtml = task.options.map((opt, optIdx) => {
+                const isSelected = userChoice === optIdx;
+                let btnStyle = "bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-200";
+
+                if (isAnswered) {
+                    if (opt.correct) {
+                        btnStyle = "bg-emerald-600 text-white font-bold border-emerald-600 shadow-sm";
+                    } else if (isSelected && !opt.correct) {
+                        btnStyle = "bg-rose-600 text-white font-bold border-rose-600 shadow-sm";
+                    } else {
+                        btnStyle = "bg-slate-100 opacity-50 text-slate-500 border-slate-200";
+                    }
+                }
+
+                return `
+                    <button onclick="selectCalcAnswer('${task.id}', ${optIdx})" ${isAnswered ? 'disabled' : ''}
+                        class="w-full p-3 sm:p-3.5 rounded-xl border text-left text-xs sm:text-sm font-semibold transition flex items-center justify-between gap-2 ${btnStyle}">
+                        <span>${opt.text}</span>
+                        ${isAnswered && opt.correct ? '<span class="text-base">✓</span>' : ''}
+                        ${isSelected && !opt.correct ? '<span class="text-base">✗</span>' : ''}
+                    </button>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 card-shadow space-y-3.5">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                        <h3 class="font-black text-slate-800 text-sm sm:text-base flex items-center gap-2">
+                            <span class="w-6 h-6 rounded-lg bg-blue-100 text-blue-800 font-bold text-xs flex items-center justify-center">${currentCalcIdx + 1}</span>
+                            <span>${task.title}</span>
+                        </h3>
+                        <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-blue-50 text-blue-700">Задача НМТ</span>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl text-xs sm:text-sm font-medium text-slate-800 leading-relaxed">
+                        ${task.problemText}
+                    </div>
+
+                    <div class="space-y-2 pt-1">
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Варіанти відповіді:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+
+                    ${isAnswered ? `
+                        <div class="p-3.5 rounded-xl border text-xs sm:text-sm ${task.options[userChoice].correct ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'} transition-all space-y-1">
+                            <div class="font-extrabold flex items-center gap-1">
+                                <span>${task.options[userChoice].correct ? '🎉 Правильно!' : '⚠️ Хід розв\'язку:'}</span>
+                            </div>
+                            <p class="font-medium leading-relaxed">${task.explanation}</p>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Update bottom controls
+            document.getElementById('calc-task-counter').innerText = `${currentCalcIdx + 1} з ${calcTasksData.length}`;
+            document.getElementById('calc-prev-btn').disabled = currentCalcIdx === 0;
+            document.getElementById('calc-prev-btn').classList.toggle('opacity-40', currentCalcIdx === 0);
+
+            const nextBtn = document.getElementById('calc-next-btn');
+            if (currentCalcIdx === calcTasksData.length - 1) {
+                nextBtn.innerText = "Завершити та підсумок →";
+                nextBtn.onclick = function() { finishGame(); };
+            } else {
+                nextBtn.innerText = "Наступна задача →";
+                nextBtn.onclick = function() { navCalcTask(1); };
+            }
+
+            recalculateScore();
+        }
+
+        function jumpCalcTask(idx) {
+            playSound('click');
+            currentCalcIdx = idx;
+            renderCalcTask();
+        }
+
+        function navCalcTask(delta) {
+            playSound('click');
+            currentCalcIdx = Math.max(0, Math.min(calcTasksData.length - 1, currentCalcIdx + delta));
+            renderCalcTask();
+        }
+
+        function selectCalcAnswer(taskId, optIdx) {
+            userCalcAnswers[taskId] = optIdx;
+            const task = calcTasksData.find(t => t.id === taskId);
+            if (task.options[optIdx].correct) {
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+            renderCalcTask();
+        }
+
+        // --- GLOBAL SCORE & PROGRESS ---
+        function recalculateScore() {
+            let correctCount = 0;
+
+            hessTasksData.forEach(t => {
+                const ans = userHessAnswers[t.id];
+                if (ans !== undefined && t.options[ans].correct) correctCount++;
+            });
+
+            calcTasksData.forEach(t => {
+                const ans = userCalcAnswers[t.id];
+                if (ans !== undefined && t.options[ans].correct) correctCount++;
+            });
+
+            totalScore = correctCount * 10; // 10 tasks * 10 pts = 100 max
+            updateScoreUI();
+        }
+
+        function updateScoreUI() {
+            document.getElementById('score-display').innerText = totalScore;
+        }
+
+        function finishGame() {
+            switchLevel(3);
+        }
+
+        function calculateFinalResults() {
+            document.getElementById('final-score-val').innerText = totalScore;
+            const msgEl = document.getElementById('final-feedback-msg');
+
+            if (totalScore >= 90) {
+                msgEl.innerText = "Фантастичний результат! Ти бездоганно розв'язуєш розрахункові задачі та застосовуєш Закон Гесса! 🌟🏆";
+                playSound('fanfare');
+            } else if (totalScore >= 70) {
+                msgEl.innerText = "Чудовий рівень! Невелика додаткова практика — і ти гарантовано отримаєш 200 балів на НМТ! 👍";
+                playSound('correct');
+            } else {
+                msgEl.innerText = "Гарна спроба! Переглянь підсумкову шпаргалку нижче з алгоритмами та спробуй ще раз! 📚";
+            }
+        }
+
+        function restartGame() {
+            playSound('click');
+            userHessAnswers = {};
+            userCalcAnswers = {};
+            currentHessIdx = 0;
+            currentCalcIdx = 0;
+            totalScore = 0;
+
+            updateScoreUI();
+            renderHessTask();
+            renderCalcTask();
+            switchLevel(1);
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+    </script>
+</body>
+</html>
